@@ -80,9 +80,21 @@ def download_ioc_info(session, threat_id, iocCount, original_timestamp, ctime, k
     session.headers['referer'] = f'https://x.threatbook.com/v5/article?threatInfoID={threat_id}'
     response = session.get(url, stream=True)
     if response.status_code == 200:
+        # 创建目标目录
+        base_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'source')
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
+        
+        # 创建标签对应的子目录
+        label_dir = os.path.join(base_dir, keyword.strip('#'))
+        if not os.path.exists(label_dir):
+            os.makedirs(label_dir)
+        
+        # 构建文件路径
         filename = f'ioc_{threat_id}_{iocCount}_{ctime}_{original_timestamp}_{keyword}.xls'
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        file_path = os.path.join(script_dir, filename)
+        file_path = os.path.join(label_dir, filename)
+        
+        # 保存文件
         with open(file_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
